@@ -1,3 +1,13 @@
+---
+title: MNIST Draw Digit Classifier
+emoji: ✏️
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_file: launch_all.py
+pinned: false
+---
+
 # MNIST Draw-and-Predict Digit Classifier
 
 A web app where users can **draw digits (0–9)** on a canvas and get predictions from a **PyTorch-trained MNIST model**.  
