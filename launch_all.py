@@ -11,4 +11,4 @@ threading.Thread(target=run_backend, daemon=True).start()
 
 # Start Gradio frontend
 demo = create_gradio_interface(backend_url="http://127.0.0.1:8000/predict")
-demo.launch(server_name="0.0.0.0", server_port=7860)
+demo.launch(server_name="0.0.0.0", server_port=7860, css=".result-box textarea { font-size: 1.5rem !important; font-weight: 600 !important; text-align: center !important; }")
