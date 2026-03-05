@@ -1,11 +1,11 @@
 # PyTorch & MNIST support
 torch==2.1.1
-torchvision==0.15.2
-Pillow==12.1.1
+torchvision==0.16.2
+pillow==12.1.1
 
 # Backend
-fastapi==0.95.2
-uvicorn==0.22.0
+fastapi==0.135.1
+uvicorn==0.41.0
 
 # Frontend
 gradio==6.8.0

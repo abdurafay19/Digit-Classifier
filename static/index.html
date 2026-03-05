@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Numera - Digit Classifier</title>
+  <link rel="stylesheet" href="static/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     NAV
+══════════════════════════════════════ -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">🧿</div>
+    <span class="nav-logo-text">Numera</span>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     HERO
+══════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      Neural Network · Real-time Inference
+    </div>
+    <h1 class="hero-title">
+      Handwritten digit<br>
+      recognition, <em>instantly.</em>
+    </h1>
+    <p class="hero-sub">
+      Draw any digit from 0 to 9 and prediction in real time — with full probability
+      distribution across all classes.
+    </p>
+    <div class="hero-stats">
+      <div>
+        <div class="stat-val">99%</div>
+        <div class="stat-label">Test accuracy</div>
+      </div>
+      <div>
+        <div class="stat-val">60k</div>
+        <div class="stat-label">Training samples</div>
+      </div>
+      <div>
+        <div class="stat-val">&lt; 1 sec</div>
+        <div class="stat-label">Inference time</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-grid" id="heroGrid">
+    <!-- 10 digit tiles, randomly lit on load -->
+    <div class="hg-cell">0</div>
+    <div class="hg-cell">1</div>
+    <div class="hg-cell">2</div>
+    <div class="hg-cell">3</div>
+    <div class="hg-cell">4</div>
+    <div class="hg-cell">5</div>
+    <div class="hg-cell">6</div>
+    <div class="hg-cell">7</div>
+    <div class="hg-cell">8</div>
+    <div class="hg-cell">9</div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════
+     DIVIDER
+══════════════════════════════════════ -->
+<div class="section-divider">
+  <div class="div-line"></div>
+  <span class="div-label">Classifier</span>
+  <div class="div-line"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP CARD
+══════════════════════════════════════ -->
+<div class="app-wrap">
+  <div class="app-card">
+
+    <!-- title bar -->
+    <div class="card-bar">
+      <div class="bar-dots">
+        <div class="bar-dot dot-r"></div>
+        <div class="bar-dot dot-y"></div>
+        <div class="bar-dot dot-g"></div>
+      </div>
+      <span class="bar-title">digit-classifier.app</span>
+      <div class="bar-status">
+        <span class="bar-status-dot"></span>
+        model ready
+      </div>
+    </div>
+
+    <!-- two-col -->
+    <div class="app-grid">
+
+      <!-- LEFT: canvas -->
+      <div class="left-pane">
+        <div class="pane-head">
+          <div class="pane-eyebrow">Input</div>
+          <div class="pane-name">Drawing canvas</div>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="draw-canvas"></canvas>
+
+          <div class="canvas-hint">
+            <span class="hint-icon">✦</span>
+            Draw with mouse or touch · white stroke on dark canvas
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" id="predictBtn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              Run Inference
+            </button>
+            <button class="btn btn-secondary" id="clearBtn" title="Clear canvas">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.36"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: results -->
+      <div class="right-pane">
+        <div class="pane-head">
+          <div class="pane-eyebrow">Output</div>
+          <div class="pane-name">Prediction &amp; Distribution</div>
+        </div>
+
+        <div id="results-area">
+          <!-- empty state -->
+          <div class="empty-state" id="emptyState">
+            <div class="empty-icon">◎</div>
+            <div class="empty-title">No prediction yet</div>
+            <div class="empty-sub">Draw a digit on the left,<br>then click Run Inference</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     FOOTER
+══════════════════════════════════════ -->
+<footer>
+  <div class="footer-left">
+    <span class="footer-note">PyTorch · MNIST · FastAPI</span>
+  </div>
+  <div class="footer-right">Built with ♥ by Abdul Rafay</div>
+</footer>
+
+<script src="static/app.js"></script>
+</body>
+</html>
