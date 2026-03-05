@@ -11,14 +11,6 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "model.pt")
 
-# -----------------------
-# Load Model
-# -----------------------
-device = torch.device("cpu")
-model = Model().to(device)
-model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-model.eval()
-
 transform = transforms.Compose([
     transforms.Resize((28, 28)),
     transforms.ToTensor()
@@ -31,6 +23,15 @@ app = FastAPI()
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
+
+    # -----------------------
+    # Load Model
+    # -----------------------
+    device = torch.device("cpu")
+    model = Model().to(device)
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
+    model.eval()
+
     image_bytes = await file.read()
     image = Image.open(io.BytesIO(image_bytes)).convert("L")
     image = transform(image).unsqueeze(0)
