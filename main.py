@@ -6,13 +6,17 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps
 from model import Model
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "model.pt")
 
 # -----------------------
 # Load Model
 # -----------------------
 device = torch.device("cpu")
 model = Model().to(device)
-model.load_state_dict(torch.load("model.pt", map_location=device))
+model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model.eval()
 
 transform = transforms.Compose([
