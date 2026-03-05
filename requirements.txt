@@ -1,5 +1,5 @@
-torch==2.1.2+cpu
-torchvision==0.16.2+cpu
+torch==2.1.2
+torchvision==0.16.2
 pillow==12.1.1
 fastapi==0.135.1
 uvicorn==0.41.0
