@@ -3,109 +3,153 @@
 ══════════════════════════════════════ */
 (function () {
   const cells = document.querySelectorAll('.hg-cell');
+  if (!cells.length) return;
   function randomLit() {
     cells.forEach(c => c.classList.remove('lit'));
     const count = 3 + Math.floor(Math.random() * 3);
-    const indices = [...Array(cells.length).keys()]
+    [...Array(cells.length).keys()]
       .sort(() => Math.random() - 0.5)
-      .slice(0, count);
-    indices.forEach(i => cells[i].classList.add('lit'));
+      .slice(0, count)
+      .forEach(i => cells[i].classList.add('lit'));
   }
   randomLit();
   setInterval(randomLit, 1800);
 })();
 
 /* ══════════════════════════════════════
-   CANVAS DRAWING
+   CANVAS SETUP
+   Key fix: never accumulate ctx.scale().
+   Instead, always setTransform() to start fresh.
 ══════════════════════════════════════ */
 const canvas = document.getElementById('draw-canvas');
-const ctx = canvas.getContext('2d');
+const ctx    = canvas.getContext('2d');
+const DPR    = window.devicePixelRatio || 1;
 
-// Size canvas to its CSS display size
 function resizeCanvas() {
+  // Read the CSS-rendered size
   const rect = canvas.getBoundingClientRect();
-  canvas.width  = rect.width  * window.devicePixelRatio;
-  canvas.height = rect.height * window.devicePixelRatio;
-  ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
-  ctx.fillStyle = '#080a08';
-  ctx.fillRect(0, 0, rect.width, rect.height);
-}
-resizeCanvas();
-window.addEventListener('resize', resizeCanvas);
+  const w = Math.round(rect.width);
+  const h = Math.round(rect.height);
 
-// Drawing state
-let drawing = false;
+  // Save current drawing as image before resizing
+  let snapshot = null;
+  if (canvas.width > 0 && canvas.height > 0) {
+    try { snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height); } catch (_) {}
+  }
+
+  // Resize the backing buffer
+  canvas.width  = w * DPR;
+  canvas.height = h * DPR;
+
+  // Reset transform cleanly — no cumulative scaling
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+  // Fill background
+  ctx.fillStyle = '#070908';
+  ctx.fillRect(0, 0, w, h);
+
+  // Restore drawing (best-effort; ignored if sizes differ)
+  if (snapshot) {
+    try { ctx.putImageData(snapshot, 0, 0); } catch (_) {}
+  }
+}
+
+resizeCanvas();
+
+// Debounce resize to avoid jank during orientation change
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resizeCanvas, 80);
+});
+
+/* ══════════════════════════════════════
+   DRAWING
+══════════════════════════════════════ */
+let isDrawing = false;
 let lastX = 0, lastY = 0;
 let hasDrawn = false;
 
+/**
+ * Get pointer position relative to canvas CSS size.
+ * Works for both mouse and touch (single touch).
+ */
 function getPos(e) {
   const rect = canvas.getBoundingClientRect();
-  if (e.touches) {
-    return {
-      x: e.touches[0].clientX - rect.left,
-      y: e.touches[0].clientY - rect.top
-    };
-  }
-  return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  const src  = e.touches ? e.touches[0] : e;
+  return {
+    x: src.clientX - rect.left,
+    y: src.clientY - rect.top,
+  };
 }
 
 function startDraw(e) {
   e.preventDefault();
-  drawing = true;
-  hasDrawn = true;
+  isDrawing = true;
+  hasDrawn  = true;
   const { x, y } = getPos(e);
   lastX = x; lastY = y;
+
+  // Draw a dot on tap/click so single points register
   ctx.beginPath();
   ctx.arc(x, y, 10, 0, Math.PI * 2);
   ctx.fillStyle = '#d4f5d0';
   ctx.fill();
 }
 
-function draw(e) {
-  if (!drawing) return;
+function moveDraw(e) {
+  if (!isDrawing) return;
   e.preventDefault();
   const { x, y } = getPos(e);
+
   ctx.beginPath();
   ctx.moveTo(lastX, lastY);
   ctx.lineTo(x, y);
-  ctx.strokeStyle = '#d4f5d0';
-  ctx.lineWidth = 20;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
+  ctx.strokeStyle  = '#d4f5d0';
+  ctx.lineWidth    = 20;
+  ctx.lineCap      = 'round';
+  ctx.lineJoin     = 'round';
   ctx.stroke();
+
   lastX = x; lastY = y;
 }
 
-function endDraw() { drawing = false; }
+function endDraw(e) {
+  isDrawing = false;
+}
 
+// Mouse
 canvas.addEventListener('mousedown',  startDraw);
-canvas.addEventListener('mousemove',  draw);
+canvas.addEventListener('mousemove',  moveDraw);
 canvas.addEventListener('mouseup',    endDraw);
 canvas.addEventListener('mouseleave', endDraw);
+
+// Touch — passive:false lets us call e.preventDefault() to stop scroll
 canvas.addEventListener('touchstart', startDraw, { passive: false });
-canvas.addEventListener('touchmove',  draw,       { passive: false });
-canvas.addEventListener('touchend',   endDraw);
+canvas.addEventListener('touchmove',  moveDraw,  { passive: false });
+canvas.addEventListener('touchend',   endDraw,   { passive: false });
+canvas.addEventListener('touchcancel',endDraw,   { passive: false });
 
 /* ══════════════════════════════════════
    CLEAR
 ══════════════════════════════════════ */
 document.getElementById('clearBtn').addEventListener('click', () => {
   const rect = canvas.getBoundingClientRect();
-  ctx.fillStyle = '#080a08';
+  ctx.fillStyle = '#070908';
   ctx.fillRect(0, 0, rect.width, rect.height);
   hasDrawn = false;
   showEmpty();
 });
 
 /* ══════════════════════════════════════
-   RESULTS RENDERING
+   UI STATE HELPERS
 ══════════════════════════════════════ */
 function showEmpty() {
   document.getElementById('results-area').innerHTML = `
-    <div class="empty-state" id="emptyState">
+    <div class="empty-state">
       <div class="empty-icon">◎</div>
       <div class="empty-title">No prediction yet</div>
-      <div class="empty-sub">Draw a digit on the left,<br>then click Run Inference</div>
+      <div class="empty-sub">Draw a digit above,<br>then tap <strong>Run Inference</strong></div>
     </div>`;
 }
 
@@ -117,15 +161,22 @@ function showLoading() {
     </div>`;
 }
 
+function showError(msg) {
+  document.getElementById('results-area').innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon" style="color:#ff8080;border-color:rgba(255,80,80,0.2);background:rgba(255,80,80,0.07);">⚠</div>
+      <div class="empty-title" style="color:#ff9999;">${msg}</div>
+      <div class="empty-sub">Make sure the server is running</div>
+    </div>`;
+}
+
 function showResults(data) {
-  const pred  = data.prediction;
-  const conf  = data.confidence;
-  const probs = data.probabilities;
+  const pred    = data.prediction;
+  const conf    = data.confidence;
+  const probs   = data.probabilities;
   const confPct = (conf * 100).toFixed(1);
 
-  // Sort all 10 digits by probability descending
-  const sorted = Object.entries(probs)
-    .sort((a, b) => b[1] - a[1]);
+  const sorted = Object.entries(probs).sort((a, b) => b[1] - a[1]);
 
   const barsHTML = sorted.map(([digit, prob]) => {
     const isTop = parseInt(digit) === pred;
@@ -151,44 +202,31 @@ function showResults(data) {
           <div class="conf-track">
             <div class="conf-fill" style="width:${confPct}%"></div>
           </div>
-          <div class="conf-range">
-            <span>0%</span>
-            <span>50%</span>
-            <span>100%</span>
-          </div>
+          <div class="conf-range"><span>0%</span><span>50%</span><span>100%</span></div>
         </div>
       </div>
-
       <div class="probs-section">
         <div class="probs-label">Full probability distribution</div>
-        <div class="probs-grid">
-          ${barsHTML}
-        </div>
+        <div class="probs-grid">${barsHTML}</div>
       </div>
     </div>`;
-}
 
-function showError(msg) {
-  document.getElementById('results-area').innerHTML = `
-    <div class="empty-state">
-      <div class="empty-icon" style="color:#ff6b6b;border-color:rgba(255,107,107,0.2);background:rgba(255,107,107,0.07);">⚠</div>
-      <div class="empty-title" style="color:#ff9999;">${msg}</div>
-      <div class="empty-sub">Check that the server is running</div>
-    </div>`;
+  // Scroll results into view on mobile
+  if (window.innerWidth <= 680) {
+    document.getElementById('results-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 /* ══════════════════════════════════════
    PREDICT
 ══════════════════════════════════════ */
-document.getElementById('predictBtn').addEventListener('click', async () => {
-  if (!hasDrawn) {
-    showError('Draw a digit first');
-    return;
-  }
+document.getElementById('predictBtn').addEventListener('click', () => {
+  if (!hasDrawn) { showError('Draw a digit first'); return; }
 
+  const btn = document.getElementById('predictBtn');
+  btn.disabled = true;
   showLoading();
 
-  // Export canvas to blob
   canvas.toBlob(async (blob) => {
     const fd = new FormData();
     fd.append('file', blob, 'digit.png');
@@ -200,12 +238,14 @@ document.getElementById('predictBtn').addEventListener('click', async () => {
       showResults(data);
     } catch (err) {
       showError(err.message || 'Request failed');
+    } finally {
+      btn.disabled = false;
     }
   }, 'image/png');
 });
 
 /* ══════════════════════════════════════
-   NAV TABS (cosmetic)
+   NAV TABS (cosmetic only)
 ══════════════════════════════════════ */
 document.querySelectorAll('.nav-tab').forEach(tab => {
   tab.addEventListener('click', () => {
