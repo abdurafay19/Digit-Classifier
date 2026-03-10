@@ -21,6 +21,15 @@ transform = transforms.Compose([
 # -----------------------
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
 
@@ -48,11 +57,3 @@ async def predict(file: UploadFile = File(...)):
         "confidence": round(confidence, 6),
         "probabilities": all_probs
     })
-
-# Serve static files (CSS, JS)
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Serve the frontend
-@app.get("/")
-async def root():
-    return FileResponse("static/index.html")
