@@ -7,7 +7,7 @@
     "dev:api": "cd .. && uvicorn main:app --reload --port 8000",
     "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:api\"",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 7860",
     "lint": "next lint"
   },
   "dependencies": {
