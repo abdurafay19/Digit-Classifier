@@ -2,7 +2,7 @@
 title: Numera
 emoji: 🔢
 colorFrom: green
-colorTo: teal
+colorTo: gray
 sdk: docker
 sdk_version: "1.0"
 app_file: main.py
