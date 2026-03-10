@@ -3,5 +3,6 @@ torchvision==0.16.2
 pillow==12.1.1
 fastapi==0.135.1
 uvicorn==0.41.0
-gradio==6.8.0
 numpy==1.26.4
+huggingface_hub
+python-multipart

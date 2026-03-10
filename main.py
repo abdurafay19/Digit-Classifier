@@ -2,14 +2,10 @@ import io
 import torch
 import torchvision.transforms as transforms
 from fastapi import FastAPI, UploadFile, File
-from fastapi.responses import JSONResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-from PIL import Image, ImageOps
+from fastapi.responses import JSONResponse
+from PIL import Image
 from model import Model
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "model.pt")
+from huggingface_hub import hf_hub_download
 
 transform = transforms.Compose([
     transforms.Resize((28, 28)),
@@ -30,16 +26,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+model = None
+
+@app.on_event("startup")
+def load_model():
+    global model
+
+    print("Downloading model from Hugging Face...")
+
+    model_path = hf_hub_download(
+        repo_id="abdurafay19/Digit-Classifier",
+        filename="model.pt"
+    )
+
+    print("Loading model...")
+
+    model = Model()
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+
+    print("Model loaded successfully!")
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
-
-    # -----------------------
-    # Load Model
-    # -----------------------
-    device = torch.device("cpu")
-    model = Model().to(device)
-    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-    model.eval()
 
     image_bytes = await file.read()
     image = Image.open(io.BytesIO(image_bytes)).convert("L")

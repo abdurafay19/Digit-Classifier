@@ -14,7 +14,7 @@ ENV PATH="/root/.local/share/pnpm:${PATH}"
 WORKDIR /app
 
 # Copy backend
-COPY main.py model.py model.pt requirements.txt /app/
+COPY main.py model.py requirements.txt /app/
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt

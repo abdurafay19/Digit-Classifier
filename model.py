@@ -17,9 +17,11 @@ class Model(nn.Module):
 
         self.fc_layers = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(128 * 7 * 7, 64),
+            nn.Linear(128 * 7 * 7, 84),
             nn.ReLU(),
-            nn.Linear(64, 32),
+            nn.Linear(84, 56),
+            nn.ReLU(),
+            nn.Linear(56, 32),
             nn.ReLU(),
             nn.Linear(32, 10)
         )
