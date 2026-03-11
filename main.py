@@ -7,9 +7,12 @@ from PIL import Image
 from model import Model
 from huggingface_hub import hf_hub_download
 
+# Preprocess image
 transform = transforms.Compose([
+    transforms.Grayscale(),
     transforms.Resize((28, 28)),
-    transforms.ToTensor()
+    transforms.ToTensor(),
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
 # -----------------------

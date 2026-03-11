@@ -6,24 +6,41 @@ class Model(nn.Module):
         super().__init__()
 
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=3, padding=1),
+            # Block 1: 1 -> 32 channels, 28x28 -> 14x14
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
             nn.ReLU(),
             nn.MaxPool2d(2),
+            nn.Dropout2d(0.25),
 
-            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            # Block 2: 32 -> 64 channels, 14x14 -> 7x7
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.MaxPool2d(2)
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.25),
+
+            # Block 3: 64 -> 128 channels, 7x7 -> 3x3
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.25),
+
+            # Block 3: 128 -> 256 channels, 3x3 -> 1x1
+            nn.Conv2d(128, 256, kernel_size=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+            nn.Dropout2d(0.25),
         )
 
         self.fc_layers = nn.Sequential(
-            nn.Flatten(),
-            nn.Linear(128 * 7 * 7, 84),
+            nn.Flatten(),                        # 256 * 1 * 1 = 256
+            nn.Linear(256 * 1 * 1, 128),
             nn.ReLU(),
-            nn.Linear(84, 56),
-            nn.ReLU(),
-            nn.Linear(56, 32),
-            nn.ReLU(),
-            nn.Linear(32, 10)
+            nn.Dropout(0.25),
+            nn.Linear(128, 10)
         )
 
     def forward(self, x):
