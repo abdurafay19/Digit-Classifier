@@ -33,9 +33,6 @@
 ```
 Numera/
 ├── UI/                  # Frontend — TypeScript / React
-│   ├── components/      # Canvas, prediction display, UI elements
-│   ├── pages/           # App entry points
-│   └── styles/          # CSS styling
 ├── main.py              # Python backend (API server)
 ├── model.py             # CNN architecture (PyTorch)
 ├── model.pt             # Pre-trained model weights
